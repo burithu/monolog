@@ -1,10 +1,21 @@
 # Changelog
 
 Everything that changed in the app, newest first. Each version also shows up on the
-[Releases](https://github.com/panthaX666/monolog/releases) page.
+[Releases](https://github.com/burithu/monolog/releases) page.
 
 Before 1.0, version numbers went `0.<milestone>.<update>`. From 1.0 on, the middle number goes up
 when a new feature lands and the last one for smaller changes and fixes.
+
+## [1.2.0] · 2026-10-11 · New address, better iPhone install
+
+### Changed
+- Monolog now lives at **https://burithu.github.io/monolog/** (the GitHub account was renamed from panthaX666, and GitHub doesn't redirect the old address). Every link in the README, docs and release notes points to the new one.
+- iPhone install steps updated for newer iOS, where Safari's Share button is inside the **⋯** menu.
+
+### Added
+- Chrome, Firefox and Edge on iPhone get their own install steps.
+- Opening the link inside Instagram, Facebook, TikTok or another app's built-in browser now says to open it in Safari or Chrome first (those can't install apps), with a **Copy link** button.
+- Opens properly full-screen with the right name when added to an iPhone home screen.
 
 ## [1.1.1] · 2026-10-04 · Check-in day fix
 

@@ -41,6 +41,16 @@ export function InstallPrompt({ onClose }: { onClose: () => void }) {
   const state = useInstallState();
   const platform = installPlatform();
   const [waited, setWaited] = useState(false);
+  const [copied, setCopied] = useState(false);
+
+  const copyLink = async () => {
+    try {
+      await navigator.clipboard.writeText(location.origin + location.pathname);
+      setCopied(true);
+    } catch {
+      /* clipboard blocked: the steps above still work */
+    }
+  };
 
   useEffect(() => {
     const t = setTimeout(() => setWaited(true), WAIT_MS);
@@ -68,18 +78,54 @@ export function InstallPrompt({ onClose }: { onClose: () => void }) {
         Install Monolog
       </button>
     );
-  } else if (platform === 'ios') {
+  } else if (platform === 'in-app') {
+    // Apps' built-in browsers (Instagram, TikTok…) can't install web apps: send people to a real browser.
+    body = (
+      <>
+        <Steps
+          items={[
+            <>
+              Tap <b>⋯</b> (top or bottom corner)
+            </>,
+            <>
+              Choose <b>Open in Safari</b> or <b>Open in browser</b>
+            </>,
+            <>Install from there</>,
+          ]}
+        />
+        <button className="btn btn-secondary install-btn" onClick={() => void copyLink()}>
+          {copied ? 'Link copied' : 'Copy link'}
+        </button>
+      </>
+    );
+  } else if (platform === 'ios-safari') {
     body = (
       <Steps
         items={[
           <>
-            Tap <b>Share</b> <ShareIcon /> at the bottom of Safari
+            Tap <b>Share</b> <ShareIcon /> (on newer iPhones, tap <b>⋯</b> first)
           </>,
           <>
-            Choose <b>Add to Home Screen</b>
+            Scroll down and tap <b>Add to Home Screen</b>
           </>,
           <>
-            Tap <b>Add</b>
+            Tap <b>Add</b>. Monolog is now on your home screen
+          </>,
+        ]}
+      />
+    );
+  } else if (platform === 'ios-other') {
+    body = (
+      <Steps
+        items={[
+          <>
+            Tap <b>Share</b> <ShareIcon /> next to the address bar
+          </>,
+          <>
+            Tap <b>Add to Home Screen</b> (scroll if needed)
+          </>,
+          <>
+            Tap <b>Add</b>. If it's not there, open this page in <b>Safari</b> instead
           </>,
         ]}
       />

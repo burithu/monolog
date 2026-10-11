@@ -38,14 +38,37 @@ test('without an install event it shows the menu steps; "use in browser" hides i
   await expect(page.getByRole('dialog', { name: 'Monolog' })).toHaveCount(0);
 });
 
-test.describe('iPhone', () => {
-  test.use({
-    userAgent:
-      'Mozilla/5.0 (iPhone; CPU iPhone OS 18_0 like Mac OS X) AppleWebKit/605.1.15 (KHTML, like Gecko) Version/18.0 Mobile/15E148 Safari/604.1',
-  });
-  test('shows the Safari Add to Home Screen steps', async ({ page }) => {
+const IOS_SAFARI =
+  'Mozilla/5.0 (iPhone; CPU iPhone OS 18_0 like Mac OS X) AppleWebKit/605.1.15 (KHTML, like Gecko) Version/18.0 Mobile/15E148 Safari/604.1';
+const IOS_CHROME =
+  'Mozilla/5.0 (iPhone; CPU iPhone OS 18_0 like Mac OS X) AppleWebKit/605.1.15 (KHTML, like Gecko) CriOS/130.0.6723.90 Mobile/15E148 Safari/604.1';
+const INSTAGRAM =
+  'Mozilla/5.0 (iPhone; CPU iPhone OS 18_0 like Mac OS X) AppleWebKit/605.1.15 (KHTML, like Gecko) Mobile/15E148 Instagram 350.0.0.0.0 (iPhone15,2; iOS 18_0; en_US)';
+
+test.describe('iPhone Safari', () => {
+  test.use({ userAgent: IOS_SAFARI });
+  test('shows the Add to Home Screen steps, including the newer ⋯ menu', async ({ page }) => {
     await page.goto('./');
     const prompt = page.getByRole('dialog', { name: 'Monolog' });
     await expect(prompt.getByText('Add to Home Screen')).toBeVisible();
+    await expect(prompt.getByText(/on newer iPhones, tap/)).toBeVisible();
+  });
+});
+
+test.describe('iPhone Chrome', () => {
+  test.use({ userAgent: IOS_CHROME });
+  test('shows the share-menu steps for other iPhone browsers', async ({ page }) => {
+    await page.goto('./');
+    await expect(page.getByRole('dialog', { name: 'Monolog' }).getByText(/next to the address bar/)).toBeVisible();
+  });
+});
+
+test.describe('in-app browser', () => {
+  test.use({ userAgent: INSTAGRAM });
+  test('asks to open the page in a real browser, with a copy-link button', async ({ page }) => {
+    await page.goto('./');
+    const prompt = page.getByRole('dialog', { name: 'Monolog' });
+    await expect(prompt.getByText('Open in Safari')).toBeVisible();
+    await expect(prompt.getByRole('button', { name: 'Copy link' })).toBeVisible();
   });
 });

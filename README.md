@@ -4,11 +4,12 @@ A monochrome, offline-first gym tracker.
 
 ## Install it
 
-<a href="https://panthax666.github.io/monolog/"><img src="docs/install-button.svg" alt="Install Monolog" width="260"></a>
+<a href="https://burithu.github.io/monolog/"><img src="docs/install-button.svg" alt="Install Monolog" width="260"></a>
 
 Tap the button on your phone. The site opens with an **Install Monolog** button that adds it to your home screen like any other app, and it works without internet after that.
 
-- **iPhone:** iOS doesn't allow install buttons, so the site shows you the 3 steps instead (Share, then Add to Home Screen).
+- **iPhone:** iOS doesn't allow install buttons, so the site shows you the steps instead: in Safari, tap Share (on newer iPhones it's inside the ⋯ menu), then Add to Home Screen.
+- **Opened the link inside Instagram, WhatsApp or similar?** Open it in Safari or Chrome first. Apps' built-in browsers can't install anything.
 - **Already installed?** Open it from your home screen.
 
 When there's a new version, a small **Update ready** bar shows up in the app. Tap it and you're on the latest one.
@@ -20,7 +21,7 @@ When there's a new version, a small **Update ready** bar shows up in the app. Ta
 
 ## What's new
 
-See [CHANGELOG.md](CHANGELOG.md) or the [Releases](https://github.com/panthaX666/monolog/releases) page.
+See [CHANGELOG.md](CHANGELOG.md) or the [Releases](https://github.com/burithu/monolog/releases) page.
 
 ## Other docs
 

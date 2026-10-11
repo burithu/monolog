@@ -18,7 +18,7 @@ function gitSha(): string {
 }
 
 export default defineConfig({
-  // Served from https://panthax666.github.io/monolog/
+  // Served from https://burithu.github.io/monolog/
   base: '/monolog/',
   define: {
     __APP_VERSION__: JSON.stringify(JSON.parse(readFileSync('package.json', 'utf8')).version),

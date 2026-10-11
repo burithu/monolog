@@ -13,7 +13,7 @@ Milestones M0 to M5 are done, which makes v1.0.0. See the [changelog](../CHANGEL
 ## M0: Skeleton and publishing ✅
 Get an empty app onto the phone that installs and updates itself, before building anything real.
 
-1. Public repo `panthaX666/monolog` with Vite, React and strict TypeScript, plus ESLint and Prettier.
+1. Public repo `burithu/monolog` (first created as `panthaX666/monolog`; the account was renamed) with Vite, React and strict TypeScript, plus ESLint and Prettier.
 2. Colors, spacing and base styles taken from `mockups/mockup.html`, with the Inter font bundled in.
 3. Four placeholder tabs and the tab bar.
 4. PWA setup: app name, icons, black theme, full screen, offline caching and the "Update ready" bar.

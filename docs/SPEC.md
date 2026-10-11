@@ -13,7 +13,7 @@ This was written before building and has been kept up to date since. The origina
 | Replaces | Kintore Memo / "Gym get-fit Workout Schedule" (Android, Maketore) |
 | Release 1 audience | The owner only (personal daily driver) |
 | Later | Public release on Google Play (Capacitor wrapper), possible paywall |
-| Platform | Installable PWA, hosted on GitHub Pages (`panthax666.github.io/monolog`) |
+| Platform | Installable PWA, hosted on GitHub Pages (`burithu.github.io/monolog`) |
 | Data | 100% on-device (IndexedDB). No accounts, no server, no cloud sync |
 | Import from old app | None, starting fresh (the old backup is encrypted) |
 
@@ -64,7 +64,7 @@ This was written before building and has been kept up to date since. The origina
 | D42 | No extra per-set/per-workout fields |
 | D43 | Cardio records: longest distance, longest time, fastest pace |
 | D44 | Week = Monday–Sunday |
-| D46 | Public GitHub repo `panthaX666/monolog` |
+| D46 | Public GitHub repo `burithu/monolog` (account renamed from panthaX666 in Oct 2026) |
 | A1 | Estimated 1RM = Epley `w × (1 + reps/30)` (charts only; no longer triggers celebration) |
 | A2 | Secondary muscles count ½ session in coverage |
 | A3 | Rest duration remembered per exercise; global default 90 s |
@@ -170,7 +170,7 @@ Primary button (white/black, max one per screen) · Secondary (surface-2 + borde
 
 ---
 
-## 6. Data model (IndexedDB via Dexie, DB name `monolog.panthax666`)
+## 6. Data model (IndexedDB via Dexie, DB name `monolog.panthax666`, kept after the account rename so nothing depends on it changing)
 
 ```ts
 type ID = string;           // crypto.randomUUID()

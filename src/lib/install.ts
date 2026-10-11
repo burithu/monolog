@@ -55,11 +55,26 @@ export async function promptInstall(): Promise<void> {
   emit();
 }
 
+export type InstallPlatform =
+  /** Instagram, Facebook, TikTok and other apps' built-in browsers: they can't install anything. */
+  | 'in-app'
+  /** Safari on iPhone/iPad. */
+  | 'ios-safari'
+  /** Chrome, Firefox, Edge… on iPhone (iOS 16.4+ can add to the home screen from their share menu). */
+  | 'ios-other'
+  | 'android'
+  | 'desktop';
+
 /** Which install instructions fit this device when there's no install button to offer. */
-export function installPlatform(): 'ios' | 'android' | 'desktop' {
-  const ua = navigator.userAgent;
-  if (/iPhone|iPad|iPod/.test(ua) || (ua.includes('Macintosh') && navigator.maxTouchPoints > 1)) return 'ios';
-  if (/Android/.test(ua)) return 'android';
+export function installPlatform(
+  ua: string = navigator.userAgent,
+  touchPoints = navigator.maxTouchPoints,
+): InstallPlatform {
+  if (/FBAN|FBAV|FB_IAB|Instagram|TikTok|musical_ly|Snapchat|Line\/|LinkedInApp|Pinterest|\bGSA\//.test(ua))
+    return 'in-app';
+  const ios = /iPhone|iPad|iPod/.test(ua) || (ua.includes('Macintosh') && touchPoints > 1);
+  if (ios) return /CriOS|FxiOS|EdgiOS|OPiOS|YaBrowser|DuckDuckGo/.test(ua) ? 'ios-other' : 'ios-safari';
+  if (/Android/.test(ua)) return /; wv\)/.test(ua) ? 'in-app' : 'android';
   return 'desktop';
 }
 

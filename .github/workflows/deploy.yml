@@ -74,6 +74,6 @@ jobs:
           {
             echo
             echo '---'
-            echo "Build \`${GITHUB_SHA::7}\` · [Open the app](https://panthax666.github.io/monolog/)"
+            echo "Build \`${GITHUB_SHA::7}\` · [Open the app](https://burithu.github.io/monolog/)"
           } >> body.md
           gh release create "v$V" --target "$GITHUB_SHA" --title "$TITLE" --notes-file body.md --latest

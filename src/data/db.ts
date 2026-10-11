@@ -13,7 +13,10 @@ import type {
 // IndexedDB schema, docs/SPEC.md §6. Every schema change = a new `this.version(n)` block with an
 // upgrade function AND a test that runs it against data from version n-1 (SPEC §6.6).
 
-/** Unique name: all GitHub Pages sites under panthax666.github.io share one storage origin. */
+/**
+ * Unique name: all GitHub Pages sites under one account share one storage origin. Kept as-is after
+ * the account was renamed (panthaX666 → burithu); it's internal and backups don't depend on it.
+ */
 export const DB_NAME = 'monolog.panthax666';
 export const SCHEMA_VERSION = 1;
 
