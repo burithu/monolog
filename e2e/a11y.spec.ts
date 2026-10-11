@@ -4,7 +4,11 @@ import { addExercise, logSets } from './helpers';
 
 // Accessibility: axe (WCAG 2 A/AA) on every main screen, with some data in place.
 
+// Check finished screens, not mid-animation ones: a dialog caught while fading in reads as low contrast.
+test.use({ reducedMotion: 'reduce' });
+
 async function check(page: Page, name: string) {
+  await page.waitForTimeout(250);
   const result = await new AxeBuilder({ page }).withTags(['wcag2a', 'wcag2aa', 'wcag21a', 'wcag21aa']).analyze();
   const problems = result.violations.map(
     (v) => `${name}: ${v.id} (${v.impact}) ${v.help}\n  ${v.nodes.map((n) => n.target.join(' ')).slice(0, 5).join('\n  ')}`,
