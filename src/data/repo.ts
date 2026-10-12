@@ -100,7 +100,11 @@ function cleanName(name: string): string {
   return n;
 }
 
-export async function createExercise(db: MonologDB, input: ExerciseInput, now: Date = new Date()): Promise<Exercise> {
+export async function createExercise(
+  db: MonologDB,
+  input: ExerciseInput,
+  now: Date = new Date(),
+): Promise<Exercise> {
   const name = cleanName(input.name);
   const key = nameKey(name);
   return db.transaction('rw', db.exercises, async () => {
@@ -112,7 +116,9 @@ export async function createExercise(db: MonologDB, input: ExerciseInput, now: D
       nameKey: key,
       type: input.type,
       primaryMuscles: input.primaryMuscles ?? [],
-      secondaryMuscles: (input.secondaryMuscles ?? []).filter((m) => !(input.primaryMuscles ?? []).includes(m)),
+      secondaryMuscles: (input.secondaryMuscles ?? []).filter(
+        (m) => !(input.primaryMuscles ?? []).includes(m),
+      ),
       equipment: input.equipment?.length ? input.equipment : ['other'],
       tags: input.tags ?? [],
       unit: input.unit ?? null,
@@ -142,7 +148,11 @@ export async function updateExercise(
       if (clash && clash.id !== id) throw new RepoError('duplicate_name', `“${next.name}” already exists`);
     }
     if (patch.type !== undefined && patch.type !== ex.type) {
-      const logged = await db.sets.where('exerciseId').equals(id).filter((s) => s.loggedAt != null).count();
+      const logged = await db.sets
+        .where('exerciseId')
+        .equals(id)
+        .filter((s) => s.loggedAt != null)
+        .count();
       if (logged) throw new RepoError('type_locked', 'Type can’t change once sets are logged');
     }
     next.secondaryMuscles = next.secondaryMuscles.filter((m) => !next.primaryMuscles.includes(m));
@@ -162,10 +172,20 @@ export async function getOpenSession(db: MonologDB): Promise<Session | undefined
   return db.sessions.filter((s) => s.endedAt === null).first();
 }
 
-export async function startSession(db: MonologDB, now: Date = new Date(), repeatedFrom: ID | null = null): Promise<Session> {
+export async function startSession(
+  db: MonologDB,
+  now: Date = new Date(),
+  repeatedFrom: ID | null = null,
+): Promise<Session> {
   return db.transaction('rw', db.sessions, async () => {
     if (await getOpenSession(db)) throw new RepoError('session_open', 'A workout is already in progress');
-    const s: Session = { id: uuid(), dayKey: toDayKey(now), startedAt: iso(now), endedAt: null, repeatedFrom };
+    const s: Session = {
+      id: uuid(),
+      dayKey: toDayKey(now),
+      startedAt: iso(now),
+      endedAt: null,
+      repeatedFrom,
+    };
     await db.sessions.add(s);
     return s;
   });
@@ -207,16 +227,21 @@ export async function finishSession(
  * from what remains. Returns how many logged sets were deleted.
  */
 export async function discardSession(db: MonologDB, sessionId: ID): Promise<{ deletedLoggedSets: number }> {
-  return db.transaction('rw', [db.sessions, db.sessionExercises, db.sets, db.exercises, db.recordEvents], async () => {
-    await must(db.sessions.get(sessionId), 'Session');
-    const sets = await db.sets.where('sessionId').equals(sessionId).toArray();
-    const logged = sets.filter((s) => s.loggedAt != null);
-    await db.sets.bulkDelete(sets.map((s) => s.id));
-    await db.sessionExercises.where('sessionId').equals(sessionId).delete();
-    await db.sessions.delete(sessionId);
-    for (const exerciseId of new Set(logged.map((s) => s.exerciseId))) await recomputeRecords(db, exerciseId);
-    return { deletedLoggedSets: logged.length };
-  });
+  return db.transaction(
+    'rw',
+    [db.sessions, db.sessionExercises, db.sets, db.exercises, db.recordEvents],
+    async () => {
+      await must(db.sessions.get(sessionId), 'Session');
+      const sets = await db.sets.where('sessionId').equals(sessionId).toArray();
+      const logged = sets.filter((s) => s.loggedAt != null);
+      await db.sets.bulkDelete(sets.map((s) => s.id));
+      await db.sessionExercises.where('sessionId').equals(sessionId).delete();
+      await db.sessions.delete(sessionId);
+      for (const exerciseId of new Set(logged.map((s) => s.exerciseId)))
+        await recomputeRecords(db, exerciseId);
+      return { deletedLoggedSets: logged.length };
+    },
+  );
 }
 
 /**
@@ -234,7 +259,9 @@ export async function tidySession(db: MonologDB, sessionId: ID): Promise<{ kept:
     const ses = await db.sessionExercises.where('sessionId').equals(sessionId).sortBy('order');
     await db.sessionExercises.bulkDelete(ses.filter((se) => !loggedSe.has(se.id)).map((se) => se.id));
     const kept = ses.filter((se) => loggedSe.has(se.id));
-    await Promise.all(kept.map((se, i) => (se.order === i ? null : db.sessionExercises.update(se.id, { order: i }))));
+    await Promise.all(
+      kept.map((se, i) => (se.order === i ? null : db.sessionExercises.update(se.id, { order: i }))),
+    );
     if (!kept.length) {
       await db.sessions.delete(sessionId);
       return { kept: false };
@@ -247,7 +274,11 @@ export async function tidySession(db: MonologDB, sessionId: ID): Promise<{ kept:
  * Repeat: start a new workout with the same exercises, in the same order, pre-filled with that
  * session's sets (SPEC F7).
  */
-export async function repeatSession(db: MonologDB, fromSessionId: ID, now: Date = new Date()): Promise<Session> {
+export async function repeatSession(
+  db: MonologDB,
+  fromSessionId: ID,
+  now: Date = new Date(),
+): Promise<Session> {
   return db.transaction(
     'rw',
     [db.sessions, db.sessionExercises, db.sets, db.exercises, db.settings],
@@ -261,7 +292,9 @@ export async function repeatSession(db: MonologDB, fromSessionId: ID, now: Date 
         if (!ex) continue;
         const se: SessionExercise = { id: uuid(), sessionId: session.id, exerciseId: ex.id, order: i };
         await db.sessionExercises.add(se);
-        const src = (await db.sets.where('sessionExerciseId').equals(from.id).sortBy('order')).filter((s) => s.loggedAt);
+        const src = (await db.sets.where('sessionExerciseId').equals(from.id).sortBy('order')).filter(
+          (s) => s.loggedAt,
+        );
         const sets = src.length
           ? src.map((p, j) => ghostFrom(p, blankSet(se, session.dayKey, j, ex.unit ?? unit)))
           : [blankSet(se, session.dayKey, 0, ex.unit ?? unit)];
@@ -322,10 +355,15 @@ export async function lastSessionSets(
   const logged = await db.sets
     .where('exerciseId')
     .equals(exerciseId)
-    .filter((s) => s.loggedAt != null && s.sessionId !== excludeSessionId && (!onOrBefore || s.dayKey <= onOrBefore))
+    .filter(
+      (s) =>
+        s.loggedAt != null && s.sessionId !== excludeSessionId && (!onOrBefore || s.dayKey <= onOrBefore),
+    )
     .toArray();
   if (!logged.length) return [];
-  const latest = logged.reduce((a, b) => (b.dayKey > a.dayKey || (b.dayKey === a.dayKey && b.loggedAt! > a.loggedAt!) ? b : a));
+  const latest = logged.reduce((a, b) =>
+    b.dayKey > a.dayKey || (b.dayKey === a.dayKey && b.loggedAt! > a.loggedAt!) ? b : a,
+  );
   return logged.filter((s) => s.sessionId === latest.sessionId).sort((a, b) => a.order - b.order);
 }
 
@@ -335,21 +373,25 @@ export async function addExerciseToSession(
   sessionId: ID,
   exerciseId: ID,
 ): Promise<{ sessionExercise: SessionExercise; sets: WorkoutSet[] }> {
-  return db.transaction('rw', [db.sessions, db.sessionExercises, db.sets, db.exercises, db.settings], async () => {
-    const session = await must(db.sessions.get(sessionId), 'Session');
-    const ex = await must(db.exercises.get(exerciseId), 'Exercise');
-    const order = await db.sessionExercises.where('sessionId').equals(sessionId).count();
-    const se: SessionExercise = { id: uuid(), sessionId, exerciseId, order };
-    await db.sessionExercises.add(se);
+  return db.transaction(
+    'rw',
+    [db.sessions, db.sessionExercises, db.sets, db.exercises, db.settings],
+    async () => {
+      const session = await must(db.sessions.get(sessionId), 'Session');
+      const ex = await must(db.exercises.get(exerciseId), 'Exercise');
+      const order = await db.sessionExercises.where('sessionId').equals(sessionId).count();
+      const se: SessionExercise = { id: uuid(), sessionId, exerciseId, order };
+      await db.sessionExercises.add(se);
 
-    const unit = ex.unit ?? (await getSettings(db)).unit;
-    const previous = await lastSessionSets(db, exerciseId, sessionId, session.dayKey);
-    const sets = previous.length
-      ? previous.map((p, i) => ghostFrom(p, blankSet(se, session.dayKey, i, unit)))
-      : [blankSet(se, session.dayKey, 0, unit)];
-    await db.sets.bulkAdd(sets);
-    return { sessionExercise: se, sets };
-  });
+      const unit = ex.unit ?? (await getSettings(db)).unit;
+      const previous = await lastSessionSets(db, exerciseId, sessionId, session.dayKey);
+      const sets = previous.length
+        ? previous.map((p, i) => ghostFrom(p, blankSet(se, session.dayKey, i, unit)))
+        : [blankSet(se, session.dayKey, 0, unit)];
+      await db.sets.bulkAdd(sets);
+      return { sessionExercise: se, sets };
+    },
+  );
 }
 
 /** Put a session's exercises in the given order (ids of its session exercises, first to last). */
@@ -383,17 +425,21 @@ async function setsOf(db: MonologDB, sessionExerciseId: ID): Promise<WorkoutSet[
 
 /** "＋ Add set": a new pre-filled set copying the last set of this exercise card. */
 export async function addSet(db: MonologDB, sessionExerciseId: ID): Promise<WorkoutSet> {
-  return db.transaction('rw', [db.sessionExercises, db.sessions, db.sets, db.exercises, db.settings], async () => {
-    const se = await must(db.sessionExercises.get(sessionExerciseId), 'Session exercise');
-    const session = await must(db.sessions.get(se.sessionId), 'Session');
-    const ex = await must(db.exercises.get(se.exerciseId), 'Exercise');
-    const existing = await setsOf(db, se.id);
-    const base = blankSet(se, session.dayKey, existing.length, ex.unit ?? (await getSettings(db)).unit);
-    const last = existing[existing.length - 1];
-    const set = last ? { ...ghostFrom(last, base), kind: 'working' as const } : base;
-    await db.sets.add(set);
-    return set;
-  });
+  return db.transaction(
+    'rw',
+    [db.sessionExercises, db.sessions, db.sets, db.exercises, db.settings],
+    async () => {
+      const se = await must(db.sessionExercises.get(sessionExerciseId), 'Session exercise');
+      const session = await must(db.sessions.get(se.sessionId), 'Session');
+      const ex = await must(db.exercises.get(se.exerciseId), 'Exercise');
+      const existing = await setsOf(db, se.id);
+      const base = blankSet(se, session.dayKey, existing.length, ex.unit ?? (await getSettings(db)).unit);
+      const last = existing[existing.length - 1];
+      const set = last ? { ...ghostFrom(last, base), kind: 'working' as const } : base;
+      await db.sets.add(set);
+      return set;
+    },
+  );
 }
 
 export type SetPatch = Partial<
@@ -455,7 +501,14 @@ export async function logSet(
     const siblings = await setsOf(db, set.sessionExerciseId);
     if (siblings[siblings.length - 1]?.id === set.id) {
       appended = {
-        ...ghostFrom(logged, { ...logged, id: uuid(), order: set.order + 1, note: '', loggedAt: null, toFailure: false }),
+        ...ghostFrom(logged, {
+          ...logged,
+          id: uuid(),
+          order: set.order + 1,
+          note: '',
+          loggedAt: null,
+          toFailure: false,
+        }),
         kind: 'working',
       };
       await db.sets.add(appended);
@@ -514,25 +567,41 @@ export async function recomputeRecords(db: MonologDB, exerciseId: ID): Promise<R
 
 export async function recentRecords(db: MonologDB, limit = 5): Promise<RecordEvent[]> {
   const all = await db.recordEvents.toArray();
-  return all.sort((a, b) => (a.dayKey === b.dayKey ? (a.at < b.at ? 1 : -1) : a.dayKey < b.dayKey ? 1 : -1)).slice(0, limit);
+  return all
+    .sort((a, b) => (a.dayKey === b.dayKey ? (a.at < b.at ? 1 : -1) : a.dayKey < b.dayKey ? 1 : -1))
+    .slice(0, limit);
 }
 
 // ───────────────────────── Streak, rest days, coverage ─────────────────────────
 
 /**
- * Days with at least one logged working set. Reads the distinct days from the dayKey index (keys
- * only), then just enough of each day to find one such set, instead of every set ever logged.
+ * Days with at least one logged working set. Walks the distinct days on the dayKey index (one
+ * small read per day), then just enough of each day to find one such set, instead of every set
+ * ever logged. Not `uniqueKeys()`: Safari throws "Unable to open cursor" on it when the table is
+ * empty, which crashed the very first visit on iPhones.
  */
 export async function trainedDays(db: MonologDB): Promise<Set<DayKey>> {
   return db.transaction('r', db.sets, async () => {
-    const days = (await db.sets.orderBy('dayKey').uniqueKeys()) as DayKey[];
-    const hits = await Promise.all(days.map((d) => db.sets.where('dayKey').equals(d).filter(isEligible).first()));
+    const days: DayKey[] = [];
+    for (
+      let s = await db.sets.orderBy('dayKey').first();
+      s;
+      s = await db.sets.where('dayKey').above(s.dayKey).first()
+    )
+      days.push(s.dayKey);
+    const hits = await Promise.all(
+      days.map((d) => db.sets.where('dayKey').equals(d).filter(isEligible).first()),
+    );
     return new Set(days.filter((_, i) => hits[i]));
   });
 }
 
 /** Pass `trained` when the caller already has it, to avoid reading it twice. */
-export async function getStreak(db: MonologDB, now: Date = new Date(), trained?: Set<DayKey>): Promise<Streak> {
+export async function getStreak(
+  db: MonologDB,
+  now: Date = new Date(),
+  trained?: Set<DayKey>,
+): Promise<Streak> {
   const [days, rest] = await Promise.all([trained ?? trainedDays(db), db.restDays.toArray()]);
   return computeStreak({ trainedDays: days, restDays: rest.map((r) => r.dayKey), today: toDayKey(now) });
 }
@@ -541,7 +610,10 @@ export async function logRestDay(db: MonologDB, dayKey: DayKey, now: Date = new 
   if (!isValidDayKey(dayKey)) throw new RepoError('invalid', 'Invalid date');
   await db.transaction('rw', db.sets, db.restDays, async () => {
     if (!canLogRestDay(dayKey, toDayKey(now), await trainedDays(db)))
-      throw new RepoError('rest_day_not_allowed', 'Rest days can be logged for today, or yesterday until midnight');
+      throw new RepoError(
+        'rest_day_not_allowed',
+        'Rest days can be logged for today, or yesterday until midnight',
+      );
     await db.restDays.put({ dayKey, createdAt: iso(now) });
   });
 }
@@ -585,13 +657,16 @@ export async function getCoverage(db: MonologDB, now: Date = new Date()): Promis
 
 // ───────────────────────── Body ─────────────────────────
 
-export type BodyInput = Partial<Pick<BodyEntry, 'weightKg' | 'bodyFatPct' | 'muscleMassKg' | 'waistCm' | 'note'>>;
+export type BodyInput = Partial<
+  Pick<BodyEntry, 'weightKg' | 'bodyFatPct' | 'muscleMassKg' | 'waistCm' | 'note'>
+>;
 
 /** One check-in per day: saving again on the same day updates it. */
 export async function saveBodyEntry(db: MonologDB, dayKey: DayKey, input: BodyInput): Promise<BodyEntry> {
   if (!isValidDayKey(dayKey)) throw new RepoError('invalid', 'Invalid date');
   for (const [k, v] of Object.entries(input)) if (k !== 'note') validNumber(v as number | null, k);
-  if (input.bodyFatPct != null && input.bodyFatPct > 100) throw new RepoError('invalid', 'Body fat must be ≤ 100%');
+  if (input.bodyFatPct != null && input.bodyFatPct > 100)
+    throw new RepoError('invalid', 'Body fat must be ≤ 100%');
   return db.transaction('rw', db.bodyEntries, async () => {
     const existing = await db.bodyEntries.where('dayKey').equals(dayKey).first();
     const entry: BodyEntry = {
@@ -616,7 +691,13 @@ export async function clearBodyMetric(db: MonologDB, id: ID, key: MetricKey): Pr
     const e = await db.bodyEntries.get(id);
     if (!e) return;
     const next = { ...e, [key]: null };
-    if (next.weightKg == null && next.bodyFatPct == null && next.muscleMassKg == null && next.waistCm == null && !next.note.trim())
+    if (
+      next.weightKg == null &&
+      next.bodyFatPct == null &&
+      next.muscleMassKg == null &&
+      next.waistCm == null &&
+      !next.note.trim()
+    )
       await db.bodyEntries.delete(id);
     else await db.bodyEntries.put(next);
   });

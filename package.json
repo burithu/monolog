@@ -1,7 +1,7 @@
 {
   "name": "monolog",
   "private": true,
-  "version": "1.2.0",
+  "version": "1.2.1",
   "type": "module",
   "description": "A monochrome, offline-first gym tracker (PWA).",
   "scripts": {

@@ -6,6 +6,11 @@ Everything that changed in the app, newest first. Each version also shows up on 
 Before 1.0, version numbers went `0.<milestone>.<update>`. From 1.0 on, the middle number goes up
 when a new feature lands and the last one for smaller changes and fixes.
 
+## [1.2.1] · 2026-10-12 · iPhone first-visit fix
+
+### Fixed
+- Opening Monolog for the first time on an iPhone (iOS 18) showed "Something broke" with "Unable to open cursor". Safari has a bug when reading a list of days from an empty database, and a brand new install is exactly that. The app now reads those days a different way that Safari handles fine. No speed change.
+
 ## [1.2.0] · 2026-10-11 · New address, better iPhone install
 
 ### Changed
